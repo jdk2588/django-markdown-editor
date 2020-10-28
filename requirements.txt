@@ -3,3 +3,5 @@ Markdown
 requests
 martor
 gunicorn
+coverage
+pytest
