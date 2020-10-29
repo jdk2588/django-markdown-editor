@@ -27,6 +27,14 @@ pipeline {
    }
   }
 
+  stage('Build Image') {
+   steps {
+    script {
+      dockerImage = docker.build "$registry:${params.RELEASE_TAG}"
+    }
+   }
+  }
+
   stage('Check Lint') {
    steps {
     sh "docker run --rm $registry:${params.RELEASE_TAG} flake8 --ignore=E501,F401,W391"
@@ -36,16 +44,6 @@ pipeline {
   stage('Run Tests') {
    steps {
     sh "docker run -v $projectPath/reports:/app/reports  --rm --network='host' $registry:${params.RELEASE_TAG} python martor_demo/manage.py test"
-   }
-  }
-
-  stage('Build Image') {
-   steps {
-    script {
-     if (isMaster()) {
-      dockerImage = docker.build "$registry:master"
-     }
-    }
    }
   }
 
