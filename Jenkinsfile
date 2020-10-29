@@ -47,14 +47,14 @@ pipeline {
 
   stage('Run Tests') {
    steps {
-    sh "docker run -v $projectPath/reports:/app/reports  --rm --network='host' --env-file=.test.env $registry:${params.RELEASE_TAG} python manage.py test"
+    sh "docker run -v $projectPath/reports:/app/reports  --rm --network='host' $registry:${params.RELEASE_TAG} python manage.py test"
    }
   }
 
   stage('Deploy Image') {
    steps {
     script {
-      docker.withRegistry("$registryURL", registryCredential) {
+      docker.withRegistry("", registryCredential) {
       dockerImage.push()
       }
     }
