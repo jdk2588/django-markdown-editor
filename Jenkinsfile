@@ -47,7 +47,7 @@ pipeline {
 
   stage('Run Tests') {
    steps {
-    sh "docker run -v $projectPath/reports:/app/reports  --rm --network='host' $registry:${params.RELEASE_TAG} python manage.py test"
+    sh "docker run -v $projectPath/reports:/app/reports  --rm --network='host' $registry:${params.RELEASE_TAG} python martor_demo/manage.py test"
    }
   }
 
