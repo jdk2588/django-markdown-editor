@@ -55,7 +55,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-
+    'django_nose',
     'martor',
     'app',
 ]
@@ -71,6 +71,12 @@ MIDDLEWARE = [
 ]
 
 ROOT_URLCONF = 'martor_demo.urls'
+TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
+
+# Tell nose to measure coverage on the 'foo' and 'bar' apps
+NOSE_ARGS = [
+    '--with-coverage'
+]
 
 TEMPLATES = [
     {

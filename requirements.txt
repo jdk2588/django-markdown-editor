@@ -5,3 +5,4 @@ martor
 gunicorn
 coverage
 pytest
+django-nose

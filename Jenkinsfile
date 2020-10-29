@@ -41,42 +41,13 @@ pipeline {
 
   stage('Check Lint') {
    steps {
-    sh "docker run --rm $registry:${params.RELEASE_TAG} flake8"
+    sh "docker run --rm $registry:${params.RELEASE_TAG} flake8 --ignore=E501,F401,W391"
    }
   }
 
   stage('Run Tests') {
    steps {
-    sh "docker run -v $projectPath/reports:/app/reports  --rm --network='host' --env-file=.test.env $registry:${params.RELEASE_TAG} coverage run -m pytest --verbose --junit-xml reports/results.xml"
-   }
-   post {
-    always {
-     // Archive unit tests for the future
-     junit allowEmptyResults: true, testResults: 'reports/results.xml'
-    }
-   }
-  }
-
-  stage('Calculate Coverage') {
-   steps {
-    echo "Code Coverage"
-    sh "docker run -v $projectPath/reports:/app/reports --rm --network='host' --env-file=.test.env $registry:${params.RELEASE_TAG} coverage xml -o reports/coverage.xml"
-   }
-   post {
-    always {
-     step([$class: 'CoberturaPublisher',
-      autoUpdateHealth: false,
-      autoUpdateStability: false,
-      coberturaReportFile: 'reports/coverage.xml',
-      failUnhealthy: false,
-      failUnstable: false,
-      maxNumberOfBuilds: 0,
-      onlyStable: false,
-      sourceEncoding: 'ASCII',
-      zoomCoverageChart: false
-     ])
-
-    }
+    sh "docker run -v $projectPath/reports:/app/reports  --rm --network='host' --env-file=.test.env $registry:${params.RELEASE_TAG} python manage.py test"
    }
   }
 
