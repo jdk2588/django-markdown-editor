@@ -97,5 +97,17 @@ def getBuildName() {
 }
 
 def isMaster() {
- "${params.RELEASE_TAG}" == "master"
+ get_branch_name() == "master"
+}
+
+def get_branch_name() {
+  if (env.BRANCH_NAME.startsWith("master")) {
+    return "master"
+  } else {
+    try {
+      return env.BRANCH_NAME.split('/')[-1]
+    } catch(Exception e) {
+      error "Could not find branch name."
+    }
+  }
 }
