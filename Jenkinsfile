@@ -101,7 +101,7 @@ def isMaster() {
 }
 
 def get_branch_name() {
-  if (env.BRANCH_NAME.startsWith("master")) {
+  if (env.BRANCH_NAME.contains("master")) {
     return "master"
   } else {
     try {
