@@ -31,7 +31,7 @@ pipeline {
    steps {
     script {
      if (isMaster()) {
-      dockerImage = docker.build "$registry:latest"
+      dockerImage = docker.build "$registry:master"
      } else {
       dockerImage = docker.build "$registry:${params.RELEASE_TAG}"
      }
