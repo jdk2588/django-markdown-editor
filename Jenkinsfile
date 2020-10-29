@@ -27,18 +27,6 @@ pipeline {
    }
   }
 
-  stage('Build Image') {
-   steps {
-    script {
-     if (isMaster()) {
-      dockerImage = docker.build "$registry:master"
-     } else {
-      dockerImage = docker.build "$registry:${params.RELEASE_TAG}"
-     }
-    }
-   }
-  }
-
   stage('Check Lint') {
    steps {
     sh "docker run --rm $registry:${params.RELEASE_TAG} flake8 --ignore=E501,F401,W391"
@@ -51,12 +39,24 @@ pipeline {
    }
   }
 
-  stage('Deploy Image') {
+  stage('Build Image') {
    steps {
     script {
+     if (isMaster()) {
+      dockerImage = docker.build "$registry:master"
+     }
+    }
+   }
+  }
+
+  stage('Push Image') {
+   steps {
+    script {
+     if (isMaster()) {
       docker.withRegistry("", registryCredential) {
       dockerImage.push()
-      }
+      } 
+     }
     }
    }
   }
@@ -64,15 +64,19 @@ pipeline {
   stage('Notify Telegram') {
    steps() {
     script {
+     if (isMaster()) {
       telegram.sendTelegram("Build successful for ${getBuildName()}\n" +
       "image $registry:${params.RELEASE_TAG} is pushed to DockerHub and ready to be deployed")
+     }
     }
    }
   }
 
   stage('Garbage Collection') {
    steps {
-    sh "docker rmi $registry:${params.RELEASE_TAG}"
+    if (isMaster()) {
+       sh "docker rmi $registry:${params.RELEASE_TAG}"
+    }
    }
   }
  }
