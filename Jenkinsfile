@@ -74,8 +74,10 @@ pipeline {
 
   stage('Garbage Collection') {
    steps {
-    if (isMaster()) {
-       sh "docker rmi $registry:${params.RELEASE_TAG}"
+    script {
+    	if (isMaster()) {
+      	 sh "docker rmi $registry:${params.RELEASE_TAG}"
+    	}
     }
    }
   }
