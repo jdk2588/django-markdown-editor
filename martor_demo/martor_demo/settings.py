@@ -35,7 +35,7 @@ MARTOR_ENABLE_CONFIGS = {
     'emoji': 'true',        # to enable/disable emoji icons.
     'imgur': 'true',        # to enable/disable imgur/custom uploader.
     'mention': 'true',      # to enable/disable mention
-    'jquery': 'true',       # to include/revoke jquery (require for admin default django)
+    'jquery': 'true',
     'living': 'false',      # to enable/disable live updates in preview
     'spellcheck': 'false',  # to enable/disable spellcheck in form textareas
     'hljs': 'true',         # to enable/disable hljs highlighting in preview
@@ -55,7 +55,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-
+    'django_nose',
     'martor',
     'app',
 ]
@@ -71,6 +71,12 @@ MIDDLEWARE = [
 ]
 
 ROOT_URLCONF = 'martor_demo.urls'
+TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
+
+# Tell nose to measure coverage on the 'foo' and 'bar' apps
+NOSE_ARGS = [
+    '--with-coverage'
+]
 
 TEMPLATES = [
     {
