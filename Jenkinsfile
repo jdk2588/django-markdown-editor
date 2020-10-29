@@ -30,11 +30,7 @@ pipeline {
   stage('Build Image') {
    steps {
     script {
-     if (isMaster()) {
-      dockerImage = docker.build "$registry:master"
-     } else {
       dockerImage = docker.build "$registry:${params.RELEASE_TAG}"
-     }
     }
    }
   }
@@ -51,12 +47,14 @@ pipeline {
    }
   }
 
-  stage('Deploy Image') {
+  stage('Push Image') {
    steps {
     script {
+     if (isMaster()) {
       docker.withRegistry("", registryCredential) {
       dockerImage.push()
-      }
+      } 
+     }
     }
    }
   }
@@ -64,15 +62,21 @@ pipeline {
   stage('Notify Telegram') {
    steps() {
     script {
+     if (isMaster()) {
       telegram.sendTelegram("Build successful for ${getBuildName()}\n" +
       "image $registry:${params.RELEASE_TAG} is pushed to DockerHub and ready to be deployed")
+     }
     }
    }
   }
 
   stage('Garbage Collection') {
    steps {
-    sh "docker rmi $registry:${params.RELEASE_TAG}"
+    script {
+    	if (isMaster()) {
+      	 sh "docker rmi $registry:${params.RELEASE_TAG}"
+    	}
+    }
    }
   }
  }
