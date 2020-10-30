@@ -82,10 +82,12 @@ pipeline {
    }
   }
   
-  stage ('Final') {
+  stage ('Deploy') {
       steps {
        script {
+    	if (isMaster()) {
          build job: 'Deploy', wait: false, parameters: [stringParam(name: 'target', value: "${commit}")]
+        }
       }
     }
   } 
