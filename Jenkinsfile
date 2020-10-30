@@ -1,3 +1,5 @@
+#!/usr/bin/env groovy
+
 library identifier: 'jenkins-shared@master', retriever: modernSCM(
  [$class: 'GitSCMSource',
   remote: 'https://github.com/MobodidTech/jenkins-shared.git',
@@ -9,6 +11,7 @@ pipeline {
   registry = "jdk2588/ci-cd"
   registryCredential = "docker"
   projectPath = "/jenkins/data/workspace/django-server"
+  commit = "${GIT_COMMIT.substring(0,8)}"
  }
 
  agent any
@@ -20,30 +23,29 @@ pipeline {
  }
 
  stages {
-
   stage('Basic Information') {
    steps {
-    sh "echo tag: ${params.RELEASE_TAG}"
+    sh "echo ${params.RELEASE_TAG} ${commit}" 
    }
   }
 
   stage('Build Image') {
    steps {
     script {
-      dockerImage = docker.build "$registry:${params.RELEASE_TAG}"
+      dockerImage = docker.build "$registry:${commit}"
     }
    }
   }
 
   stage('Check Lint') {
    steps {
-    sh "docker run --rm $registry:${params.RELEASE_TAG} flake8 --ignore=E501,F401,W391"
+    sh "docker run --rm $registry:${commit} flake8 --ignore=E501,F401,W391"
    }
   }
 
   stage('Run Tests') {
    steps {
-    sh "docker run -v $projectPath/reports:/app/reports  --rm --network='host' $registry:${params.RELEASE_TAG} python martor_demo/manage.py test"
+    sh "docker run -v $projectPath/reports:/app/reports  --rm --network='host' $registry:${commit} python martor_demo/manage.py test"
    }
   }
 
@@ -74,11 +76,22 @@ pipeline {
    steps {
     script {
     	if (isMaster()) {
-      	 sh "docker rmi $registry:${params.RELEASE_TAG}"
+      	 sh "docker rmi $registry:${commit}"
     	}
     }
    }
   }
+  
+  stage ('Deploy') {
+      steps {
+       script {
+    	if (isMaster()) {
+         build job: 'Deploy', wait: false, parameters: [stringParam(name: 'target', value: "${commit}")]
+        }
+      }
+    }
+  } 
+  
  }
 
  post {
@@ -93,7 +106,7 @@ pipeline {
 }
 
 def getBuildName() {
- "${BUILD_NUMBER}_$appName:${params.RELEASE_TAG}"
+ "${BUILD_NUMBER}_$appName:${commit}"
 }
 
 def isMaster() {
@@ -101,11 +114,11 @@ def isMaster() {
 }
 
 def get_branch_name() {
-  if (env.BRANCH_NAME.contains("master")) {
+  if (env.GIT_BRANCH.contains("master")) {
     return "master"
   } else {
     try {
-      return env.BRANCH_NAME.split('/')[-1]
+      return env.GIT_BRANCH.split('/')[-1]
     } catch(Exception e) {
       error "Could not find branch name."
     }
