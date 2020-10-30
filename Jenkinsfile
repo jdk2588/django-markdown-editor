@@ -86,7 +86,7 @@ pipeline {
       steps {
        script {
     	if (isMaster()) {
-         build job: 'Deploy', wait: false, parameters: [stringParam(name: 'target', value: "${commit}")]
+         build job: 'django-markdown-deploy', wait: false, parameters: [stringParam(name: 'target', value: "${commit}")]
         }
       }
     }
